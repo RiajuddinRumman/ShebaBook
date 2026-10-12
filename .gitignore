@@ -1,0 +1,36 @@
+# Dependencies
+/node_modules
+
+# Build output
+/dist
+
+# Environment — never commit real credentials
+.env
+.env.*
+!.env.example
+
+# Prisma generated client
+/src/generated
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Agent/skill tooling artifacts
+/.agents
+/.claude
+/.windsurf
+/skills-lock.json
+
+# Test coverage
+/coverage
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+/.idea
+/.vscode
+
+/generated/prisma
