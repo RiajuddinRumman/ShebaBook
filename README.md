@@ -16,7 +16,8 @@ prevention. 113 unit tests + 41 end-to-end tests, all passing.
 | `POST /bookings` | customer JWT | request an appointment |
 
 ```bash
-npm install
+npm ci                        # npm only; there is exactly one lockfile
+npx prisma generate           # npm may skip Prisma's postinstall; typecheck/tests need the client
 cp .env.example .env          # then edit DATABASE_URL and JWT_SECRET
 docker compose up -d          # or any Postgres 14+ the URL points at
 npx prisma migrate dev        # creates tables + the hand-written constraints
@@ -276,11 +277,16 @@ logic, and every path into it needs the same care.
 
 ## 8. Environment notes for this machine
 
-- **Two package managers.** Both `package-lock.json` and `pnpm-lock.yaml` (plus
-  `pnpm-workspace.yaml`) exist, and `node_modules` is currently pnpm-managed. One
-  `pnpm install` or `npm ci` will desync them. Pick one and delete the other lockfile — that
-  requires removing `node_modules` and reinstalling, so do it deliberately, not as a side
-  effect.
+- **One package manager: npm.** `package-lock.json` is the only lockfile and `node_modules` is
+  npm-managed. The project briefly lived under pnpm before this was settled, which left three
+  files (`pnpm-lock.yaml`, `pnpm-workspace.yaml`, a pnpm-shaped `node_modules`) that npm knows
+  nothing about; they were removed and the tree rebuilt with `npm ci`. Mixed managers are silent
+  corruption waiting to happen — if you add pnpm back, delete `package-lock.json` in the same
+  commit.
+- **Prisma's client is generated, not committed.** `src/generated/` is gitignored. `npm ci` may
+  report *"install scripts not yet covered by allowScripts"* for `prisma` and `@prisma/engines`
+  and skip the postinstall, so run `npx prisma generate` before `typecheck`, `test`, or `build`
+  on a fresh clone.
 - **Port 3000 may already be taken** by an unrelated `nest start --watch`. If `GET /` answers
   while your app logged `EADDRINUSE`, you are probing someone else's server. Verify the owner
   (`lsof -nP -iTCP:3000 -sTCP:LISTEN`, then check the process command and parent) or run on
